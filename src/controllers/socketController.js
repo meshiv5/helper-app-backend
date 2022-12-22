@@ -8,6 +8,7 @@ function socketController(socket) {
     console.log(socket.rooms);
   });
   socket.on("send-msg", (msgToSend, senderEmail, receiverEmail, roomID, senderID) => {
+    socket.to(roomID).to(senderID).emit("receive-msg", msgToSend, senderEmail, receiverEmail);
     messageModel.findOne({ roomID: roomID }).then((res) => {
       if (res) {
         messageModel.updateOne(
@@ -22,7 +23,6 @@ function socketController(socket) {
         messageModel.insertMany([{ roomID: roomID, messages: new Array(1).fill({ from: senderEmail, to: receiverEmail, message: msgToSend }) }]);
       }
     });
-    socket.to(roomID).to(senderID).emit("receive-msg", msgToSend, senderEmail, receiverEmail);
   });
 }
 
