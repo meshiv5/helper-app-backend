@@ -21,11 +21,11 @@ const serviceSchema = new mongoose.Schema(
                 'other',
             ],
             default: 'other',
-            employer: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'user',
-                required: true,
-            },
+        },
+        employer: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'user',
+            required: true,
         },
         description: { type: String, required: true },
         pay: { type: Number, required: true },
