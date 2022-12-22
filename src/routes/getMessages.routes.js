@@ -8,7 +8,7 @@ Router.get("/:id", verifyUser, async (req, res) => {
   try {
     const roomID = id;
     console.log(roomID);
-    const messageData = await messageModel.findOne({ roomID: roomID });
+    const messageData = await messageModel.findOne({ $or: [{ roomID1: roomID }, { roomID2: roomID }] });
     if (!messageData) return res.status(400).send({ status: false, message: "messages Not Found" });
     return res.status(200).send({ status: true, data: messageData });
   } catch (err) {

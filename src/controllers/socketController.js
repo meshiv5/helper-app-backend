@@ -9,10 +9,10 @@ function socketController(socket) {
   });
   socket.on("send-msg", (msgToSend, senderEmail, receiverEmail, roomID, senderID) => {
     socket.to(roomID).to(senderID).emit("receive-msg", msgToSend, senderEmail, receiverEmail);
-    messageModel.findOne({ roomID: roomID }).then((res) => {
+    messageModel.findOne({ $or: [{ roomID1: roomID }, { roomID2: roomID }] }).then((res) => {
       if (res) {
         messageModel.updateOne(
-          { roomID: roomID },
+          { $or: [{ roomID1: roomID }, { roomID2: roomID }] },
           { $push: { messages: { from: senderEmail, to: receiverEmail, message: msgToSend } } },
           { upsert: true },
           (err, msg) => {
@@ -20,7 +20,9 @@ function socketController(socket) {
           }
         );
       } else {
-        messageModel.insertMany([{ roomID: roomID, messages: new Array(1).fill({ from: senderEmail, to: receiverEmail, message: msgToSend }) }]);
+        messageModel.insertMany([
+          { roomID1: roomID, roomID2: senderID, messages: new Array(1).fill({ from: senderEmail, to: receiverEmail, message: msgToSend }) },
+        ]);
       }
     });
   });

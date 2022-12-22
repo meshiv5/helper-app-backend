@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 
 const messageSchema = new mongoose.Schema(
   {
-    roomID: { type: String, required: true },
+    roomID1: { type: String, required: true },
+    roomID2: { type: String, required: true },
     messages: { type: Array, default: [] },
   },
   { vsersionKey: false, timestamps: true }
