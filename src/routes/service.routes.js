@@ -14,8 +14,9 @@ app.get('/', async (req, res) => {
             order = 1,
             limit = 10,
             page = 1,
+            role = 'buyer',
         } = req.query;
-        const { role, user } = req.body;
+        const { user } = req.body;
         let services;
         services = await serviceModel.aggregate([
             {
@@ -64,22 +65,47 @@ app.post('/', async (req, res) => {
     }
 });
 
-// edit services
+//needs better error handling
 app.patch('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { user, task } = req.body;
+        const { user, task, description, category, pay } = req.body;
         const service = await serviceModel.findById(id);
-        if (service.employer == mongoose.Types.ObjectId(user.id)) {
-            await serviceModel.findOneAndUpdate({ _id: id }, {
-                
-            })
+        if (
+            service.employer.toString() ==
+            mongoose.Types.ObjectId(user.id).toString()
+        ) {
+            await serviceModel.findByIdAndUpdate(id, {
+                task,
+                category,
+                description,
+                pay: +pay,
+            });
+            return res.status(200).send('Service updated');
+        }
+        return res.status(403).send('Forbidden');
+    } catch (e) {
+        console.log(e);
+        return res.status(400).send('Bad request');
+    }
+});
+
+app.delete('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { user } = req.body;
+        const service = await serviceModel.findById(id);
+        if (
+            service.employer.toString() ==
+            mongoose.Types.ObjectId(user.id).toString()
+        ) {
+            await serviceModel.findByIdAndDelete(id);
+            return res.status(200).send('Service deleted');
         }
         return res.status(403).send('Forbidden');
     } catch {
         return res.status(400).send('Bad request');
     }
 });
-// forgot password
 
 module.exports = app;

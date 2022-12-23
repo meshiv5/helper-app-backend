@@ -16,6 +16,7 @@ app.use(cors());
 const authRouter = require('../src/routes/auth.routes');
 const serviceRouter = require('../src/routes/service.routes');
 const getOtherDataRoutes = require('./routes/getOtherData.routes');
+const walletRouter = require('../src/routes/wallet.routes');
 const socketController = require('./controllers/socketController');
 
 app.get('/', (req, res) => {
@@ -24,14 +25,12 @@ app.get('/', (req, res) => {
 app.use('/getOtherData', getOtherDataRoutes);
 app.use('/auth', authRouter);
 app.use('/service', serviceRouter);
+app.use('/wallet', walletRouter);
 
 io.on('connection', (socket) => {
     console.log('user connected with socket id:- ' + socket.id);
     socketController(socket);
 });
-
-app.use('/auth', authRouter);
-app.use('/service', serviceRouter);
 
 server.listen(port, () => {
     connect();
