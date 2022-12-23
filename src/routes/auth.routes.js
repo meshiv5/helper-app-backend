@@ -73,7 +73,7 @@ app.post('/forgot-password', async (req, res) => {
                 expiresIn: '900s',
             }
         );
-        const link = `http://localhost:8000/auth/reset-password/${user.id}/${token}`;
+        const link = `https://helper-app-two.vercel.app/auth/reset-password/${user.id}/${token}`;
         sendMail(email, {
             subject: 'Reset password',
             text: `Please click on this ${link} to reset password`,
