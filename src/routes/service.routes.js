@@ -29,7 +29,7 @@ app.get('/', async (req, res) => {
                               },
                           },
             },
-            { $match: { task: { $regex: query } } },
+            { $match: { task: { $regex: query, $options: 'i' } } },
             {
                 $match: filter ? { category: filter } : {},
             },
