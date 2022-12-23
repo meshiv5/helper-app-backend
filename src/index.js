@@ -13,27 +13,27 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 
-const authRouter = require("../src/routes/auth.routes");
-const serviceRouter = require("../src/routes/service.routes");
-const getOtherDataRoutes = require("./routes/getOtherData.routes");
+const authRouter = require('../src/routes/auth.routes');
+const serviceRouter = require('../src/routes/service.routes');
+const getOtherDataRoutes = require('./routes/getOtherData.routes');
+const walletRouter = require('../src/routes/wallet.routes');
+const socketController = require('./controllers/socketController');
 const getMessages = require("./routes/getMessages.routes");
-const socketController = require("./controllers/socketController");
 
 app.get("/", (req, res) => {
   res.send("Namaste");
 });
-app.use("/getOtherData", getOtherDataRoutes);
+
+app.use('/getOtherData', getOtherDataRoutes);
+app.use('/auth', authRouter);
+app.use('/service', serviceRouter);
+app.use('/wallet', walletRouter);
 app.use("/getMessages", getMessages);
-app.use("/auth", authRouter);
-app.use("/service", serviceRouter);
 
 io.on("connection", (socket) => {
   console.log("user connected with socket id:- " + socket.id);
   socketController(socket);
 });
-
-app.use("/auth", authRouter);
-app.use("/service", serviceRouter);
 
 server.listen(port, () => {
   connect();

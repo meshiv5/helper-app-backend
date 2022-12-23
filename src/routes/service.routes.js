@@ -1,8 +1,8 @@
 const app = require('express').Router();
-const { isObjectIdOrHexString } = require('mongoose');
 const verifyUser = require('../middlewares/verifyUser');
 const serviceModel = require('../models/service.model');
 const userModel = require('../models/user.model');
+const mongoose = require('mongoose');
 
 app.use(verifyUser);
 
@@ -14,49 +14,37 @@ app.get('/', async (req, res) => {
             order = 1,
             limit = 10,
             page = 1,
+            role = 'buyer',
         } = req.query;
-        const { role, user } = req.body;
+        const { user } = req.body;
         let services;
-        console.log(user.name);
-        if (role == 'seller') {
-            services = await serviceModel.aggregate([
-                {
-                    $match: {
-                        employer: mongoose.Types.ObjectId(user.id),
-                    },
-                },
-                { $match: { task: { $regex: query } } },
-                {
-                    $match: filter ? { category: filter } : {},
-                },
-                {
-                    $sort: { pay: +order },
-                },
-                { $skip: +(limit * (+page - 1)) },
-                { $limit: +limit },
-            ]);
-        } else {
-            services = await serviceModel.aggregate([
-                { $match: { employer: { $ne: user.id } } },
-                { $match: { _id: user.id } },
-                { $match: { task: { $regex: query } } },
-                {
-                    $match: filter ? { category: filter } : {},
-                },
-                {
-                    $sort: { pay: +order },
-                },
-                { $skip: +(limit * (+page - 1)) },
-                { $limit: +limit },
-            ]);
-        }
+        services = await serviceModel.aggregate([
+            {
+                $match:
+                    role == 'seller'
+                        ? { employer: mongoose.Types.ObjectId(user.id) }
+                        : {
+                              employer: {
+                                  $ne: mongoose.Types.ObjectId(user.id),
+                              },
+                          },
+            },
+            { $match: { task: { $regex: query } } },
+            {
+                $match: filter ? { category: filter } : {},
+            },
+            {
+                $sort: { pay: +order },
+            },
+            { $skip: +(limit * (+page - 1)) },
+            { $limit: +limit },
+        ]);
         await userModel.populate(services, {
             path: 'employer',
             select: { name: 1, email: 1 },
         });
         return res.status(200).send(services);
-    } catch (e) {
-        console.log(e);
+    } catch {
         return res.status(400).send('Bad request');
     }
 });
@@ -77,7 +65,47 @@ app.post('/', async (req, res) => {
     }
 });
 
-// edit services
-// forgot password
+//needs better error handling
+app.patch('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { user, task, description, category, pay } = req.body;
+        const service = await serviceModel.findById(id);
+        if (
+            service.employer.toString() ==
+            mongoose.Types.ObjectId(user.id).toString()
+        ) {
+            await serviceModel.findByIdAndUpdate(id, {
+                task,
+                category,
+                description,
+                pay: +pay,
+            });
+            return res.status(200).send('Service updated');
+        }
+        return res.status(403).send('Forbidden');
+    } catch (e) {
+        console.log(e);
+        return res.status(400).send('Bad request');
+    }
+});
+
+app.delete('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { user } = req.body;
+        const service = await serviceModel.findById(id);
+        if (
+            service.employer.toString() ==
+            mongoose.Types.ObjectId(user.id).toString()
+        ) {
+            await serviceModel.findByIdAndDelete(id);
+            return res.status(200).send('Service deleted');
+        }
+        return res.status(403).send('Forbidden');
+    } catch {
+        return res.status(400).send('Bad request');
+    }
+});
 
 module.exports = app;
