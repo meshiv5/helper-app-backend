@@ -10,6 +10,7 @@ const sendMail = require('../controllers/sendMail');
 app.post('/signup', async (req, res) => {
     try {
         const { name, email, password } = req.body;
+        email = email.toLowerCase();
         await userModel.create({
             name,
             email,
@@ -24,6 +25,7 @@ app.post('/signup', async (req, res) => {
 app.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
+        email = email.toLowerCase();
         const user = await userModel.findOne({
             email,
         });
@@ -59,6 +61,7 @@ app.get(
 app.post('/forgot-password', async (req, res) => {
     try {
         let { email } = req.body;
+        email = email.toLowerCase();
         let user = await userModel.findOne({ email });
         if (!user) return res.status(404).send('Email not found');
         const secret = process.env.FORGOT_PASSWORD_SECRET + user.password;
